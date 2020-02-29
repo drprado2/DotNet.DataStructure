@@ -10,18 +10,16 @@ namespace DotNet.DataStructure.Linear.Arrays
 
         T Last();
         
-        T AtPosition(int pos);
+        T GetAt(int pos);
 
-        void ChangeAtPosition(T element, int pos);
+        void ChangeAt(T element, int pos);
         
-        void PushAtPosition(T element, int pos);
+        void PushAt(T element, int pos);
         
         bool RemoveAt(int pos);
 
         void AddFirst(T element);
         
-        void AddLast(T element);
-
         void AddRange(IEnumerable<T> collection);
 
         void Reverse();
@@ -32,7 +30,7 @@ namespace DotNet.DataStructure.Linear.Arrays
 
         bool IsEmpty { get; }
 
-        IArrayList<T> GetSubArrayList(int startPostion, int endPosition=-1);
+        IArrayList<T> GetSubArrayList(int startPostion, int quantity=-1);
 
         (int position, T element) SearchFirst(Predicate<T> predicate);
         
@@ -40,16 +38,16 @@ namespace DotNet.DataStructure.Linear.Arrays
         
         IEnumerable<T> SearchAll(Predicate<T> predicate);
 
-        void BubbleSort(IComparer<T> comparer);
+        void BubbleSort(Func<T, T, int> funcComparer);
         
-        void InsertionSort(IComparer<T> comparer);
+        void InsertionSort(Func<T, T, int> funcComparer);
         
-        void SelectionSort(IComparer<T> comparer);
+        void SelectionSort(Func<T, T, int> funcComparer);
         
-        void MergeSort(IComparer<T> comparer);
+        void MergeSort(Func<T, T, int> funcComparer);
         
-        void QuickSort(IComparer<T> comparer);
+        void QuickSort(Func<T, T, int> funcComparer);
         
-        void HeapSort(IComparer<T> comparer);
+        void HeapSort(Func<T, T, int> funcComparer);
     }
 }
