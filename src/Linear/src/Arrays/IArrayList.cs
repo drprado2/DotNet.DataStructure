@@ -11,12 +11,16 @@ namespace DotNet.DataStructure.Linear.Arrays
         T Last();
         
         T GetAt(int pos);
+        
+        T GetAt(Index index);
 
         void ChangeAt(T element, int pos);
         
+        void ChangeAt(T element, Index index);
+        
         void PushAt(T element, int pos);
         
-        bool RemoveAt(int pos);
+        void RemoveAt(int pos);
 
         void AddFirst(T element);
         
@@ -25,12 +29,14 @@ namespace DotNet.DataStructure.Linear.Arrays
         void Reverse();
         
         T this[int index] { get; set; }
+        
+        T this[Index index] { get; set; }
 
         int IndexOf(T item);
 
         bool IsEmpty { get; }
 
-        IArrayList<T> GetSubArrayList(int startPostion, int quantity=-1);
+        IArrayList<T> Slice(int start, int length=-1);
 
         (int position, T element) SearchFirst(Predicate<T> predicate);
         

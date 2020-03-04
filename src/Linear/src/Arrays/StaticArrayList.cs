@@ -78,7 +78,17 @@ namespace DotNet.DataStructure.Linear.Arrays
             throw new NotImplementedException();
         }
 
+        public T GetAt(Index index)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ChangeAt(T element, int pos)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ChangeAt(T element, Index index)
         {
             throw new NotImplementedException();
         }
@@ -88,7 +98,7 @@ namespace DotNet.DataStructure.Linear.Arrays
             throw new NotImplementedException();
         }
 
-        public bool RemoveAt(int pos)
+        public void RemoveAt(int pos)
         {
             throw new NotImplementedException();
         }
@@ -114,13 +124,19 @@ namespace DotNet.DataStructure.Linear.Arrays
             set => throw new NotImplementedException();
         }
 
+        public T this[Index index]
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+
         public int IndexOf(T item)
         {
             throw new NotImplementedException();
         }
 
         public bool IsEmpty { get; }
-        public IArrayList<T> GetSubArrayList(int startPostion, int endPosition = -1)
+        public IArrayList<T> Slice(int startPostion, int endPosition = -1)
         {
             throw new NotImplementedException();
         }

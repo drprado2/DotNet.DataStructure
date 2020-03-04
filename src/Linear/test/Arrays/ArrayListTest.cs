@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using DotNet.DataStructure.Linear.Arrays;
 using DotNet.DataStructure.Linear.Tests.Fakes;
@@ -44,6 +43,23 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             addAction.Should().ThrowExactly<ElementAlreadyExistsException>();
             instance.Should().HaveCount(1);
         }
+        
+        [Fact]
+        public void When_cant_repeat_should_throw_exception_on_create_arraylist_from_array_with_repeted_items()
+        {
+            var el = GetCustomer();
+            var array = new Customer[] {el, GetCustomer(), GetCustomer(), el, GetCustomer()};
+            IEnumerable<Customer> asEnum = array.AsEnumerable();
+
+            Action c1 = () => new ArrayList<Customer>(array, false);
+            Action c2 = () => new ArrayList<Customer>(false, el, GetCustomer(), GetCustomer(), GetCustomer(), el, GetCustomer());
+            Action c3 = () => new ArrayList<Customer>(asEnum, false);
+
+            c1.Should().ThrowExactly<ElementAlreadyExistsException>();
+            c2.Should().ThrowExactly<ElementAlreadyExistsException>();
+            c3.Should().ThrowExactly<ElementAlreadyExistsException>();
+        }
+
 
         [Fact]
         public void When_instance_is_generated_with_an_array_structure_should_have_the_same_elements()
@@ -90,9 +106,22 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             var instance = new ArrayList<Customer>(customersArray);
             
             instance[0].Should().Be(customersArray[0]);
-            instance[1].Should().Be(customersArray[0]);
-            instance[2].Should().Be(customersArray[0]);
+            instance[1].Should().Be(customersArray[1]);
+            instance[2].Should().Be(customersArray[2]);
         }
+        
+        [Fact]
+        public void Should_be_possible_updates_elements_between_indexes()
+        {
+            var customersArray = new Customer[] { GetCustomer(), GetCustomer(), GetCustomer() };
+            var newEl = GetCustomer();
+            var instance = new ArrayList<Customer>(customersArray);
+
+            instance[1] = newEl;
+
+            instance.Should().HaveCount(3).And.ContainInOrder(customersArray[0], newEl, customersArray[2]);
+        }
+
 
         [Fact]
         public void When_acess_an_invalid_position_on_arraylist_should_throw_exception()
@@ -154,21 +183,37 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
         [Theory]
         [InlineData(2)]
         [InlineData(0)]
-        [InlineData(-1)]
-        [InlineData(4)]
         public void Should_copy_items_for_argument_array(int arrayIndex)
         {
             var customersArray = new Customer[] { GetCustomer(), GetCustomer(), GetCustomer() };
             var instance = new ArrayList<Customer>(customersArray);
             var copyLength = customersArray.Length - arrayIndex;
             var expectedArray = new Customer[copyLength];
+            var currentExpectedPosition = 0;
             for (var i = arrayIndex; i < customersArray.Length; i++)
-                expectedArray[i] = customersArray[i];
+            {
+                expectedArray[currentExpectedPosition] = customersArray[i];
+                currentExpectedPosition++;
+            }
             var copyArray = new Customer[copyLength];
             
             instance.CopyTo(copyArray, arrayIndex);
 
             copyArray.Should().Equal(expectedArray);
+        }
+        
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(3)]
+        public void When_try_to_copy_array_passing_an_invalid_position_should_thorw_exception(int position)
+        {
+            var customersArray = new Customer[] { GetCustomer(), GetCustomer(), GetCustomer() };
+            var instance = new ArrayList<Customer>(customersArray);
+            var copyArray = new Customer[10];
+            
+            Action copyAction = () => instance.CopyTo(copyArray, position);
+
+            copyAction.Should().ThrowExactly<IndexOutOfRangeException>();
         }
 
         [Fact]
@@ -179,18 +224,30 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             
             Action copyAction = () => instance.CopyTo(null, 1);
 
-            copyAction.Should().ThrowExactly<NoNullAllowedException>();
+            copyAction.Should().ThrowExactly<ArgumentException>().WithMessage("The array argument should be not null and have the length to support the transfer");
+        }
+        
+        [Fact]
+        public void When_try_to_copy_array_with_an_array_argument_that_not_support_the_elements_quantity_should_throw_exception()
+        {
+            var customersArray = new Customer[] { GetCustomer(), GetCustomer(), GetCustomer() };
+            var instance = new ArrayList<Customer>(customersArray);
+            var copyArray = new Customer[2];
+            
+            Action copyAction = () => instance.CopyTo(copyArray, 0);
+
+            copyAction.Should().ThrowExactly<ArgumentException>().WithMessage("The array argument should be not null and have the length to support the transfer");
         }
 
         [Fact]
         public void Should_remove_element_when_find_element()
         {
             var customersArray = new Customer[] { GetCustomer(), GetCustomer(), GetCustomer() };
-            var elementToDelete = customersArray[0];
+            var elementToDelete = customersArray[1];
             var instance = new ArrayList<Customer>(customersArray);
 
             instance.Remove(elementToDelete).Should().BeTrue();
-            instance.Should().HaveCount(2).And.NotContain(elementToDelete);
+            instance.Should().HaveCount(2).And.ContainInOrder(customersArray[0], customersArray[2]);
         }
         
         [Fact]
@@ -226,7 +283,7 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             var instance = new ArrayList<Customer>();
             const int qtdElements = 2000000;
 
-            for (int i = 0; i <= qtdElements; i++)
+            for (int i = 0; i < qtdElements; i++)
                 instance.Add(GetCustomer());
 
             instance.Count.Should().Be(qtdElements);
@@ -237,13 +294,32 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
         {
             var instance = new ArrayList<Customer>();
 
-            instance.First().Should().BeNull();
-
             var first = GetCustomer();
             instance.Add(first);
             instance.Add(GetCustomer());
             
             instance.First().Should().Be(first);
+            instance.FirstOrDefault().Should().Be(first);
+        }
+        
+        [Fact]
+        public void When_try_to_get_first_from_an_empty_list_should_throw_exception()
+        {
+            var instance = new ArrayList<Customer>();
+
+            Action action = () => instance.First();
+
+            action.Should().ThrowExactly<IndexOutOfRangeException>();
+        }
+        
+        [Fact]
+        public void When_get_first_or_default_with_empty_list_should_return_default_from_type()
+        {
+            var instanceReferenceType = new ArrayList<Customer>();
+            var instanceValueType = new ArrayList<int>();
+
+            instanceReferenceType.FirstOrDefault().Should().BeNull();
+            instanceValueType.FirstOrDefault().Should().Be(default);
         }
         
         [Fact]
@@ -251,14 +327,33 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
         {
             var instance = new ArrayList<Customer>();
 
-            instance.Last().Should().BeNull();
-
             var last = GetCustomer();
             instance.Add(GetCustomer());
             instance.Add(last);
             
             instance.Last().Should().Be(last);
         }
+        
+        [Fact]
+        public void When_try_to_get_last_from_an_empty_list_should_throw_exception()
+        {
+            var instance = new ArrayList<Customer>();
+
+            Action action = () => instance.Last();
+
+            action.Should().ThrowExactly<IndexOutOfRangeException>();
+        }
+        
+        [Fact]
+        public void When_get_last_or_default_with_empty_list_should_return_default_from_type()
+        {
+            var instanceReferenceType = new ArrayList<Customer>();
+            var instanceValueType = new ArrayList<int>();
+
+            instanceReferenceType.LastOrDefault().Should().BeNull();
+            instanceValueType.LastOrDefault().Should().Be(default);
+        }
+
 
         [Fact]
         public void Should_be_possible_to_change_an_element_at_position()
@@ -366,18 +461,23 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             instance.Should().HaveCount(3).And.ContainInOrder(first, second, third);
         }
 
-        [Fact]
-        public void Should_be_possible_to_reverse_array_positions()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(5)]
+        public void Should_be_possible_to_reverse_array_positions(int quantityOfElements)
         {
-            var first = GetCustomer();
-            var second = GetCustomer();
-            var third = GetCustomer();
-            IEnumerable<Customer> array = new[] {first, second, third};
+            var array = new Customer[quantityOfElements];
+            for (int i = 0; i < quantityOfElements; i++)
+                array[i] = GetCustomer();
+            
             var instance = new ArrayList<Customer>(array);
             
             instance.Reverse();
 
-            instance.Should().HaveCount(3).And.ContainInOrder(third, second, first);
+            instance.Should().HaveCount(quantityOfElements).And.ContainInOrder(array.Reverse());
         }
 
         [Fact]
@@ -407,14 +507,35 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             instance.IsEmpty.Should().BeTrue();
         }
 
-        [Fact]
-        public void Should_be_possible_to_get_an_subarray_list_from_another_list()
+        [Theory]
+        [InlineData(-1, -1)]
+        [InlineData(4, -1)]
+        [InlineData(3, -1)]
+        [InlineData(0, -1)]
+        [InlineData(2, -1)]
+        [InlineData(0, 1)]
+        [InlineData(0, -2)]
+        [InlineData(0, 5)]
+        [InlineData(2, 2)]
+        public void Should_be_possible_to_slice_list(int startPosition, int length)
         {
+            const int arrayLength = 4;
             var elements = new Customer[]{GetCustomer(), GetCustomer(), GetCustomer(),GetCustomer()};
             var instance = new ArrayList<Customer>(elements);
 
-            instance.GetSubArrayList(1, 1).Should().HaveCount(2).And.ContainInOrder(elements[1], elements[2]);
-            instance.GetSubArrayList(1).Should().HaveCount(3).And.ContainInOrder(elements[1], elements[2], elements[3]);
+            if (startPosition < 0 || startPosition > 3 || length < -1 || (startPosition + length) > arrayLength)
+            {
+                Action sliceAction = () => instance.Slice(startPosition, length);
+                sliceAction.Should().ThrowExactly<IndexOutOfRangeException>();
+                return;
+            }
+
+            var finalPos = length == -1 ? arrayLength : startPosition + length;
+            var countExpected = length == -1 ? arrayLength - startPosition : length;
+            var arrayExpected = elements[startPosition..finalPos];
+
+            instance.Slice(startPosition, length)
+                .Should().HaveCount(countExpected).And.Equal(arrayExpected);
         }
         
         [Fact]
