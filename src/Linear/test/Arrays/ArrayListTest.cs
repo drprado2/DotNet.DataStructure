@@ -600,7 +600,23 @@ namespace DotNet.DataStructure.Linear.Tests.Arrays
             
             instance.BubbleSort((leftEl, rightEl) => leftEl.Key - rightEl.Key);
 
-            instance.Should().HaveCount(7).And.ContainInOrder(first, first, second, second, third, forth, first);
+            instance.Should().HaveCount(7).And.ContainInOrder(first, first, second, second, third, forth, fifth);
+        }
+        
+        [Fact]
+        public void When_the_list_already_ordened_bubble_sort_cant_change_anything()
+        {
+            var first = GetCustomer();
+            var second = GetCustomer();
+            var third = GetCustomer();
+            var forth = GetCustomer();
+            var fifth = GetCustomer();
+            
+            var instance = new ArrayList<Customer>(true, first, first, second, second, third, forth, fifth);
+            
+            instance.BubbleSort((leftEl, rightEl) => leftEl.Key - rightEl.Key);
+
+            instance.Should().HaveCount(7).And.ContainInOrder(first, first, second, second, third, forth, fifth);
         }
 
         [Fact]

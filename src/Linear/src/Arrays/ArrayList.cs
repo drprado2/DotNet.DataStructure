@@ -21,7 +21,7 @@ namespace DotNet.DataStructure.Linear.Arrays
             if (pos < 0 || pos >= _count) throw new IndexOutOfRangeException();
         }
 
-        private void ExpandArray(int? quantity=null)
+        private void ExpandArray(int? quantity = null)
         {
             var newArray = quantity.HasValue ? new T[_array.Length + quantity.Value + SentinelPosition] : new T[_array.Length * 2 + SentinelPosition];
             _array.CopyTo(newArray, 0);
@@ -110,7 +110,7 @@ namespace DotNet.DataStructure.Linear.Arrays
             CheckArrayPosition(arrayIndex);
             if (array == null || array.Length < _count - arrayIndex)
                 throw new ArgumentException("The array argument should be not null and have the length to support the transfer");
-            
+
             var currentPos = 0;
             for (var i = arrayIndex; i < _count; i++)
             {
@@ -130,7 +130,7 @@ namespace DotNet.DataStructure.Linear.Arrays
             var index = IndexOf(item);
             if (index < 0)
                 return false;
-            
+
             PullUntilPosition(index);
 
             _count--;
@@ -144,7 +144,7 @@ namespace DotNet.DataStructure.Linear.Arrays
         public T First() => _count == 0 ? throw new IndexOutOfRangeException() : _array[0];
 
         public T FirstOrDefault() => _array[0];
-        
+
         public T Last() => _count == 0 ? throw new IndexOutOfRangeException() : _array[_count - 1];
 
         public T LastOrDefault() => _count > 0 ? _array[_count - 1] : default;
@@ -181,7 +181,7 @@ namespace DotNet.DataStructure.Linear.Arrays
         public void RemoveAt(int pos)
         {
             CheckArrayPosition(pos);
-            
+
             PullUntilPosition(pos);
             _count--;
         }
@@ -193,7 +193,7 @@ namespace DotNet.DataStructure.Linear.Arrays
                 Add(element);
                 return;
             }
-                
+
             PushAt(element, 0);
         }
 
@@ -219,7 +219,7 @@ namespace DotNet.DataStructure.Linear.Arrays
             get => GetAt(index);
             set => ChangeAt(value, index);
         }
-        
+
         public T this[Index index]
         {
             get => GetAt(index);
@@ -250,29 +250,62 @@ namespace DotNet.DataStructure.Linear.Arrays
         {
             var finalPos = quantity == -1 ? _count : startPostion + quantity;
             var areArgumentsInvalid = quantity < -1 || startPostion < 0 || startPostion >= _count || finalPos > _count;
-            if(areArgumentsInvalid)
+            if (areArgumentsInvalid)
                 throw new IndexOutOfRangeException();
             return new ArrayList<T>(_array[startPostion..finalPos]);
         }
 
         public (int position, T element) SearchFirst(Predicate<T> predicate)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < _count; i++)
+            {
+                if (predicate(_array[i]))
+                    return (i, _array[i]);
+            }
+
+            return (-1, default);
         }
 
         public (int position, T element) SearchLast(Predicate<T> predicate)
         {
-            throw new NotImplementedException();
+            for (int i = _count - 1; i > -1; i--)
+            {
+                if (predicate(_array[i]))
+                    return (i, _array[i]);
+            }
+
+            return (-1, default);
         }
 
         public IEnumerable<T> SearchAll(Predicate<T> predicate)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < _count; i++)
+            {
+                if (predicate(_array[i]))
+                    yield return _array[i];
+            }
         }
 
         public void BubbleSort(Func<T, T, int> funcComparer)
         {
-            throw new NotImplementedException();
+            var finalIndex = _count - 1;
+            bool changeAnyPosition;
+            do
+            {
+                changeAnyPosition = false;
+                for (int i = 0; i < finalIndex; i++)
+                {
+                    if (funcComparer(_array[i], _array[i + 1]) > 0)
+                    {
+                        var tmp = _array[i];
+                        _array[i] = _array[i + 1];
+                        _array[i + 1] = tmp;
+                        changeAnyPosition = true;
+                    }
+                }
+
+                finalIndex--;
+            } while (changeAnyPosition);
         }
 
         public void InsertionSort(Func<T, T, int> funcComparer)
